@@ -36,11 +36,13 @@ class MusicSorter:
 
     def sift(self, path):
         contents = os.listdir(path)
-        if len(contents) == 0:
+        ## This if statement appears to never catch empty folders because of the
+        ## order this function sifts in
+        if len(contents) == 0: ## Notify if current dir is empty
             print('\n\n\n****EMPTY: ' + path + '\n\n\n')
-            # os.rmdir(path)
+            pause_junk = input('Press enter to continue...')
+            # os.rmdir(path) ## delete current folder if empty
         for i in range(len(contents)):
-            print i
             cur_path = path + '/' + contents[i]
             if os.path.isdir(cur_path) and (contents[i][0] != '_'):
                 # print "NEW DIR: " + contents[i]
@@ -57,7 +59,7 @@ class MusicSorter:
                 # elif contents[i].find('.ini') != -1:
                 #     continue
                 #     # print "ERROR: " + contents[i]
-
+        #### Possibly place delete folder right here instead?
 
     def sort(self, path):
         if path.find('.mp3') != -1:
@@ -66,13 +68,23 @@ class MusicSorter:
                 self.cur_artist = cur_song.tag.artist
                 self.cur_album = cur_song.tag.album
                 print(self.cur_artist + ': ' + self.cur_album)
+
+                ## Check if dest folders exist
+                ## Move cur_song to appropriate dest folder
             except UnicodeDecodeError:
                 print('ERROR: Unicode error at ' + path)
+                ## Move issue cur_song to error folder
                 return
-        elif path.find('.png') != -1 or path.find('.jpg') != -1:
+            try:
+                
+            except ValueError:
+                ## Create artist folder
+        elif (path.find('.png') != -1) or (path.find('.jpg') != -1) or (path.find('.pdf') != -1):
             print('COVER: ' + path + '\n')
+            ## Move cover/book file to cur_artist+cur_album dest folder
         else:
             print('TRASH: ' + path + '\n')
+            ## Delete trash files
         return
 
 
