@@ -12,7 +12,9 @@ class MusicSorter:
         print('~~~~~~~~~~~~~~~~~~  MUSIC SORTER  ~~~~~~~~~~~~~~~\n')
         print('~~~~~~~~~~~  Northwestern University  ~~~~~~~~~~~\n')
         self.path_root = str(raw_input('Please enter destination folder:'))
-        # Setup detection/expansion of '~' home shortcut
+        # (DONE) Setup detection/expansion of '~' home shortcut
+        # (TODO) Setup dryrun:
+        self.dry_run = {}
         # path cleanup:
         if os.getcwd() != '/':
             print("Changing working directory to '/'...\n")
@@ -31,6 +33,7 @@ class MusicSorter:
             print('Using existing destination folder at ' + self.path_dest)
         print('Begning sort...')
         self.sift(self.path_root)
+        return self.dry_run
         # print('TEST COMPLETE')
         # return
 
@@ -45,6 +48,8 @@ class MusicSorter:
         for i in range(len(contents)):
             cur_path = path + '/' + contents[i]
             if os.path.isdir(cur_path) and (contents[i][0] != '_'):
+                # ^ Fix this if statement to more reliably detect OSX leftovers
+                #  ^ Possibly use sift function ite
                 # print "NEW DIR: " + contents[i]
                 self.sift(cur_path)
             else:
@@ -61,24 +66,32 @@ class MusicSorter:
                 #     # print "ERROR: " + contents[i]
         #### Possibly place delete folder right here instead?
 
+    # Still has trouble with split albums (albums that have multiple artists)
     def sort(self, path):
         if path.find('.mp3') != -1:
             try:
                 cur_song = eyed3.load(path)
                 self.cur_artist = cur_song.tag.artist
                 self.cur_album = cur_song.tag.album
-                print(self.cur_artist + ': ' + self.cur_album)
+                self.cur_title = cur_song.tag.title
+                # print(self.cur_artist + ': ' + self.cur_album + ': ' + self.cur_title)
 
                 ## Check if dest folders exist
+                if self.cur_artist in self.dry_run:
+                    if self.cur_album in self.dry_run[self.cur_artist]:
+                        self.dry_run[self.cur_artist][self.cur_album].append(self.cur_title)
+                    else:
+                        self.dry_run[self.cur_artist][self.cur_album] = [self.cur_title]
+                else:
+                    self.dry_run[self.cur_artist][self.cur_album] = [self.cur_title]
                 ## Move cur_song to appropriate dest folder
             except UnicodeDecodeError:
                 print('ERROR: Unicode error at ' + path)
                 ## Move issue cur_song to error folder
                 return
-            try:
-                
             except ValueError:
                 ## Create artist folder
+                print('Artist folder created at ' + path)
         elif (path.find('.png') != -1) or (path.find('.jpg') != -1) or (path.find('.pdf') != -1):
             print('COVER: ' + path + '\n')
             ## Move cover/book file to cur_artist+cur_album dest folder
