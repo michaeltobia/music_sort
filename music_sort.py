@@ -55,6 +55,8 @@ class MusicSorter:
             # os.rmdir(path) ## delete current folder if empty
         for i in range(len(contents)):
             cur_path = path + '/' + contents[i]
+            if '_singles' in cur_path or '_sorted' in cur_path:
+                continue
             if os.path.isdir(cur_path) and (contents[i][0] != '_'):
                 # ^ Fix this if statement to more reliably detect OSX leftovers
                 #  ^ Possibly use sift function ite
@@ -72,8 +74,8 @@ class MusicSorter:
                 # elif contents[i].find('.ini') != -1:
                 #     continue
                 #     # print "ERROR: " + contents[i]
-        if self.dry_run == 'n':
-            os.rmdir(path)
+        # if self.dry_run == 'n':
+            # os.rmdir(path)
         self.return_log()
 
     # Still has trouble with split albums (albums that have multiple artists)
@@ -86,7 +88,8 @@ class MusicSorter:
                 self.cur_title = cur_song.tag.title
                 self.cur_artist_path = self.path_dest + '/' + self.cur_artist
                 self.cur_album_path = self.cur_artist_path + '/' + self.cur_album
-                # print(self.cur_album_path)
+                print(self.cur_artist_path)
+                print(self.cur_album_path)
                 # print(self.cur_artist + ': ' + self.cur_album + ': ' + self.cur_title)
 
                 ## Check if dest folders exist
@@ -99,10 +102,11 @@ class MusicSorter:
                         os.makedirs(self.cur_album_path)
                     # move song to album path
                     try:
-                        shutil.move(path, self.cur_album_path)
+                        shutil.copy(path, self.cur_album_path)
                     except shutil.Error:
-                        shutil.move(path, self.path_error)
-                        print("Duplicate error at: " + path)
+                        print("Duplicate error at: " + path + '\n')
+                        trash = input('Press enter to continue...')
+                        shutil.copy(path, self.path_error)
 
 
                 #Add song to sort_log
@@ -119,7 +123,7 @@ class MusicSorter:
                 # if tags have indecipherable characters, move song to _unsorted
                 print('ERROR: Unicode error at ' + path)
                 if self.dry_run == 'n':
-                    shutil.move(path, self.path_error)
+                    shutil.copy(path, self.path_error)
 
                 return
             except ValueError:
@@ -130,18 +134,28 @@ class MusicSorter:
             # print('COVER: ' + path + '\n')
             if self.dry_run == 'n':
                 try:
-                    shutil.move(path, self.cur_album_path)
+                    shutil.copy(path, self.cur_album_path)
                 except AttributeError:
-                    shutil.move(path, self.path_error)
+                    shutil.copy(path, self.path_error)
                     print('UNSORTED COVER: ' + path)
         else:
             # move misc files (a la .ini, .txt, ect.) to _unsorted
             # print('TRASH: ' + path + '\n')
             if self.dry_run == 'n':
+                # move file to _unsorted
                 try:
-                    shutil.move(path, self.path_error)
+                    shutil.copy(path, self.path_error)
+                # rename file if a file with the same name is already in _unsorted
+                # then move it
                 except shutil.Error:
-                    shutil.move(path, path + str(self.duplicate_name_counter))
+                    # os.rename(path, path + str(self.duplicate_name_counter))
+                    dupe_name = path + str(self.duplicate_name_counter)
+                    shutil.copy(path, dupe_name)
+                    shutil.move(dupe_name, self.path_error)
+                    self.duplicate_name_counter += 1
+                # rename + move tree if 'file' is a trash dir
+                except IOError:
+                    shutil.copytree(path, path + str(self.duplicate_name_counter))
                     shutil.move(path + str(self.duplicate_name_counter), self.path_error)
                     self.duplicate_name_counter += 1
         return
