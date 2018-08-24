@@ -3,6 +3,7 @@
 #### To Do
 ####    - You should probably make a method for duplicate name altering/error handling
 ####    - Make clean() method to remove empty folders after sort
+####    - Add duplicate folder detector method to prevent _unsorted crowding
 
 import os, sys, unicodedata, shutil     # native utilities
 import eyed3    # audio file ID3 package
@@ -144,9 +145,15 @@ class MusicSorter:
                 try:
                     shutil.move(path, self.cur_album_path)
                 except AttributeError:
+                    ## can't use cur_artist/album here, since thats what raises
+                    ## the attribute error in the first place
+                    # cover_name = '/' + self.cur_artist + '_' + self.cur_album
+                    # print(path)
                     shutil.move(path, self.path_error)
                     print('UNSORTED COVER: ' + path)
                 except shutil.Error:
+                    # cover_name = '/' + self.cur_artist + '_' + self.cur_album
+                    # dupe_cover_name = '/' + cover_name + str(self.duplicate_name_counter)
                     dupe_name = '/' + os.path.basename(path) + str(self.duplicate_name_counter)
                     shutil.move(path, self.path_error + dupe_name)
                     self.duplicate_name_counter += 1
@@ -179,7 +186,7 @@ class MusicSorter:
         else:
             for i in range(len(contents)):
                 cur_path = path + '/' + contents[i]
-                if '_singles' in  or '_sorted' in cur_path or '_unsorted' in cur_path:
+                if '_singles' in cur_path or '_sorted' in cur_path or '_unsorted' in cur_path:
                     continue
                 elif os.path.isdir(cur_path):
                     self.clean_target(cur_path)
