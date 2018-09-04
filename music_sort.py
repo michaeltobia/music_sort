@@ -60,7 +60,7 @@ class MusicSorter:
             # os.rmdir(path) ## delete current folder if empty
         for i in range(len(contents)):
             cur_path = path + '/' + contents[i]
-            if '_singles' in cur_path or '_sorted' in cur_path:
+            if '_singles' in cur_path or '_sorted' in cur_path or '_maybe':
                 continue
             if os.path.isdir(cur_path) and (contents[i][0] != '_'):
                 # ^ Fix this if statement to more reliably detect OSX leftovers
@@ -186,7 +186,7 @@ class MusicSorter:
         else:
             for i in range(len(contents)):
                 cur_path = path + '/' + contents[i]
-                if '_singles' in cur_path or '_sorted' in cur_path or '_unsorted' in cur_path:
+                if '_singles' in cur_path or '_sorted' in cur_path or '_unsorted' in cur_path or '_maybe':
                     continue
                 elif os.path.isdir(cur_path):
                     self.clean_target(cur_path)
