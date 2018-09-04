@@ -51,23 +51,28 @@ class MusicSorter:
         # return
 
     def sift(self, path):
+        # print('1111111111111111111111111111111111111111111111111111')
         contents = os.listdir(path)
         ## This if statement appears to never catch empty folders because of the
         ## order this function sifts in
         if len(contents) == 0: ## Notify if current dir is empty
             print('\n\n\n****EMPTY: ' + path + '\n\n\n')
-            pause_junk = raw_input('Press enter to continue...')
+            # pause_junk = raw_input('Press enter to continue...')
             # os.rmdir(path) ## delete current folder if empty
         for i in range(len(contents)):
             cur_path = path + '/' + contents[i]
-            if '_singles' in cur_path or '_sorted' in cur_path or '_maybe':
+            # print(cur_path)
+            if '_singles' in cur_path or '_sorted' in cur_path or '_maybe' in cur_path:
+                # print('CONT')
                 continue
             if os.path.isdir(cur_path) and (contents[i][0] != '_'):
                 # ^ Fix this if statement to more reliably detect OSX leftovers
                 #  ^ Possibly use sift function ite
                 # print "NEW DIR: " + contents[i]
+                # print('SIFT')
                 self.sift(cur_path)
             else:
+                # print('22222222222222222222222222222222222222222222222222222')
                 self.sort(cur_path)
                 # if contents[i].find('.mp3') != -1:
                 #
@@ -97,25 +102,29 @@ class MusicSorter:
                 # print(self.cur_artist + ': ' + self.cur_album + ': ' + self.cur_title)
 
                 ## Check if dest folders exist
-                if self.dry_run == 'n':
-                    if not os.path.exists(self.cur_artist_path):
-                        # make artist folder if it doesn't exist
-                        os.makedirs(self.cur_artist_path)
-                    if not os.path.exists(self.cur_album_path):
-                        # make album folder if it doesn't exist
-                        os.makedirs(self.cur_album_path)
-                    # move song to album path
-                    try:
-                        shutil.move(path, self.cur_album_path)
-                    except shutil.Error:
-                        print("Duplicate error at: " + path + '\n')
-                        trash = raw_input('Press enter to continue...')
+                try:
+                    if self.dry_run == 'n':
+                        if not os.path.exists(self.cur_artist_path):
+                            # make artist folder if it doesn't exist
+                            os.makedirs(self.cur_artist_path)
+                        if not os.path.exists(self.cur_album_path):
+                            # make album folder if it doesn't exist
+                            os.makedirs(self.cur_album_path)
+                        # move song to album path
                         try:
-                            shutil.move(path, self.path_error)
-                        # allow for multiple duplicates
+                            shutil.move(path, self.cur_album_path)
                         except shutil.Error:
-                            dupe_name = '/' + os.path.basename(path) + str(self.duplicate_name_counter)
-                            shutil.move(path, self.path_error + dupe_name)
+                            print("Duplicate error at: " + path + '\n')
+                            trash = raw_input('Press enter to continue...')
+                            try:
+                                shutil.move(path, self.path_error)
+                            # allow for multiple duplicates
+                            except shutil.Error:
+                                dupe_name = '/' + os.path.basename(path) + str(self.duplicate_name_counter)
+                                shutil.move(path, self.path_error + dupe_name)
+                except TypeError:
+                    print(path)
+                    # trash = raw_input('Temporary TyperError catch, press enter to continue...')
 
 
                 #Add song to sort_log
@@ -180,19 +189,26 @@ class MusicSorter:
         return
 
     def clean_target(self, path):
+        print('RUNNING')
         contents = os.listdir(path)
+        print(path)
+        print(len(contents))
         if len(contents) == 0:
+            print(path + 'was empty and has been removed')
             os.rmdir(path)
         else:
             for i in range(len(contents)):
                 cur_path = path + '/' + contents[i]
-                if '_singles' in cur_path or '_sorted' in cur_path or '_unsorted' in cur_path or '_maybe':
+                # print(cur_path)
+                if '_singles' in cur_path or '_sorted' in cur_path or '_unsorted' in cur_path or '_maybe' in cur_path:
                     continue
                 elif os.path.isdir(cur_path):
+                    print(cur_path + 'recur sift\n')
                     self.clean_target(cur_path)
                 else:
-                    os.rmdir(cur_path)
-                    return
+                    # os.rmdir(cur_path)
+                    # return
+                    pass
         return
 
 
